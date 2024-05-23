@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roshan Rateria Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            flex-direction: column;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .content {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            transition: transform 0.1s ease;
+            margin-bottom: 20px;
+        }
+        .content h1 {
+            font-size: 3em;
+            margin: 0;
+            color: #FFD700;
+        }
+        .skills {
+            font-size: 1.2em;
+            color: #FFD700;
+            margin-top: 10px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-image: linear-gradient(45deg,rgba(194, 6, 6, 0.3),rgba(0,0,0,0.3));
+            margin: 0 10px;
+            border-radius: 5px;
+            z-index: 10;
+            transition: background 0.3s;
+        }
+        .tab:hover,.tab.active:hover {
+           background-image: linear-gradient(45deg,red,rgba(0,0,0,0.3));
+        }
+        .tab.active{
+            background-image: linear-gradient(45deg,rgba(255,0,0,0.7),rgba(0,0,0,0.3));
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+            z-index: 10;
+        }
+        .card {
+           
+            margin: 10px;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+            z-index: 2;  
+           background-image: linear-gradient(225deg,rgba(0,0,0,0.3),rgba(0,213,255,0.3));
+        }
+ .card:hover {
+            transform: translateY(-10px);
+            background-image: linear-gradient(225deg,rgba(0,0,0,0.3),rgba(0,213,255,1));
+            animation: none;
+            
+                text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            
+        }
+        .card h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+        .card p {
+            color: #ddd;
+        }
+        a{
+            color:orangered;
+        }
+        @media (max-width: 768px) {
+            .content {
+                transform: none !important;
+                margin-top: 50%;
+                margin-left: 20%;
+             }
+            .content h1 {
+                font-size: 2em;
+            }
+            body{
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: row;
+                gap:30px;
+                overflow-y: scroll;
+            }
+            .card-container{
+                margin-left: 20%;
+            }
+            .tabs{
+                margin-left: 20%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="content">
+        <h1>Hi, I am Roshan Rateria</h1>
+        <div class="skills">AI/ML, Full Stack Web Dev, AR Developer, Prompt Engineer, UI/UX Designer</div>
+    </div>
+    <div class="tabs">
+        <div class="tab active" data-tab="qualifications">Qualifications</div>
+        <div class="tab" data-tab="projects">Projects</div>
+        <div class="tab" data-tab="achievements">Achievements</div>
+    </div>
+    <div class="card-container" id="card-container">
+        <!-- Qualifications will be populated here -->
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const content = document.querySelector('.content');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        const particles = [];
+        let particleCount = window.innerWidth <= 768 ? 80 : 150; 
+        let maxDistance = window.innerWidth <= 768 ? 100 : 150;
+
+        const mouse = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+        };
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+            moveContent();
+        });
+        window.addEventListener('touchmove', (event) => {
+            mouse.x = event.touches[0].clientX;
+            mouse.y = event.touches[0].clientY;
+            moveContent();
+        });
+        
+
+        const moveContent = () => {
+            const xMove = (mouse.x / window.innerWidth - 0.5) * 30;
+            const yMove = (mouse.y / window.innerHeight - 0.5) * 30;
+            content.style.transform = `translate(${xMove}px, ${yMove}px)`;
+        };
+
+        const createParticle = () => {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                size: Math.random() * 2 + 2,
+                color: getRandomColor(),
+            };
+        };
+
+        const initParticles = () => {
+            particles.length = 0;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(createParticle());
+            }
+        };
+
+        const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dist = distance(particles[i], particles[j]);
+                    if (dist < maxDistance) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / maxDistance})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            ctx.beginPath();
+            particles.forEach(p => {
+                const dist = distance(p, mouse);
+                if (dist < maxDistance) {
+                    ctx.moveTo(mouse.x, mouse.y);
+                    ctx.lineTo(p.x, p.y);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / maxDistance})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            });
+        };
+
+        const update = () => {
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            });
+        };
+
+        const distance = (p1, p2) => {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+
+        const getRandomColor = () => {
+            const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF', '#33FFA5', '#FFA533',
+  // Add more colors here:
+  '#FFC0CB', // Pink
+  '#D2B48C', // Tan
+  '#90EE90', // Light green
+  '#00CED1', // Dark turquoise
+  '#F08080', // Light coral
+  '#E6E6FA', // Lavender
+  '#ADD8E6', // Light blue
+];
+            return colors[Math.floor(Math.random() * colors.length)];
+        };
+
+        const animate = () => {
+            draw();
+            update();
+            requestAnimationFrame(animate);
+        };
+
+        initParticles();
+        animate();
+
+        const tabs = document.querySelectorAll('.tab');
+        const cardContainer = document.getElementById('card-container');
+
+        const qualifications = [
+            'Microsoft Certified: Azure AI Fundamentals',
+            'Certified Exposure Management Expert',
+            'Generative Adversarial Networks (GANs) Specialization By DeepLearning.AI',
+            'IBM AI Engineering Specialization By IBM',
+            'Meta AR Developer Specialization by Meta',
+            'IBM Generative AI for Cybersecurity Professionals by IBM'
+        ];
+
+        const projects = [
+            {
+                name: 'Auctions Web App',
+                links: 'https://youtu.be/oveKmEPZ9m4',
+                skills: 'Full Stack Development, User Authentication'
+            },
+            {
+                name: 'ARBowl AR game developed in Unity',
+                links: 'https://drive.google.com/file/d/1ftHqGFuQOPTLUsc1pGMidHjrNfJo2Nc-/view?usp=sharing',
+                skills: 'Augmented Reality, Unity3D'
+            },
+            {
+                name: 'Hotel Booking Web App',
+                links: 'https://youtu.be/P05O2h5z-Hs',
+                skills: 'Full Stack Development, Booking Systems'
+            },
+            {
+                name: 'Mail Web App',
+                links: 'https://youtu.be/DB0bH9es7KI',
+                skills: 'Email Systems, Frontend and Backend Development'
+            },
+            {
+                name: 'MNIST And FER A simple CV Project',
+                links: 'https://www.loom.com/share/39f97a1e697441388c702e201e44fed5',
+                skills: 'Computer Vision, TensorFlow'
+            },
+            {
+                name: 'AR Effect',
+                links: 'https://www.instagram.com/ar/358368937080514/',
+                skills: 'Augmented Reality, Graphic Design'
+            }
+        ];
+
+        const achievements = [
+            'Secured 1st position (ISC) - 2022',
+            'DevSprint - 1st Runner Up - 2022',
+            'Code On - 2nd Runner Up - 2022',
+            'Smart Makers’ Festival - Winner - 2023',
+            'CodeKraft v1.0 - Winner - 2023',
+            'MachineHack Unveils Top Performers in Google Cloud BigQuery LTV Prediction Challenge - 2023',
+            'Enginious - Winner - 2023',
+            'Reverse CodingX (IIT Madras) - Finalist - 2024',
+            'Space India Hackathon - Finalist - 2024'
+        ];
+
+        const renderCards = (items) => {
+            cardContainer.innerHTML = items.map(item => `
+                <div class="card">
+                    <h3>${item.name || item}</h3>
+                    ${item.links ? `<p><a href="${item.links}" target="_blank">View Project</a></p>` : ''}
+                    ${item.skills ? `<p>Skills: ${item.skills}</p>` : ''}
+                </div>
+            `).join('');
+        };
+
+        renderCards(qualifications);
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelector('.tab.active').classList.remove('active');
+                tab.classList.add('active');
+
+                if (tab.dataset.tab === 'qualifications') {
+                    renderCards(qualifications);
+                } else if (tab.dataset.tab === 'projects') {
+                    renderCards(projects);
+                } else if (tab.dataset.tab === 'achievements') {
+                    renderCards(achievements);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
